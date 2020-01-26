@@ -8,11 +8,14 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+    
+    private static final String loginUrlPage = "https://localhost:4200/loginUnificado";
 
     @Autowired
     public void globalUserDetails(final AuthenticationManagerBuilder auth) throws Exception {
@@ -37,9 +40,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		.antMatchers("/oauth/token/revokeById/**").permitAll()
 		.antMatchers("/tokens/**").permitAll()
 		.anyRequest().authenticated()
-		.and().formLogin().permitAll()
+		.and().formLogin().loginPage(loginUrlPage).permitAll().and().exceptionHandling().authenticationEntryPoint(createAuthenticationEntryPoint(loginUrlPage))
 		.and().csrf().disable();
 		// @formatter:on
     }
 
+    //Genero el authenticationentruy point como un general.
+    public AuthenticationEntryPoint createAuthenticationEntryPoint(String loginFormUrl) {
+    	return new CustomAuthenticationEntryPoint(loginFormUrl);
+    }
+    
 }
